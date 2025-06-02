@@ -21,9 +21,8 @@ class DocumentController extends Controller
             return response()->json([
                 'message' => 'Documents information Retrived',
                 'status' => 200,
-                'data' => DocumentResource::collection($documents),
-                200
-            ]);
+                'data' => DocumentResource::collection($documents)
+            ], 200);
         } else {
             return response()->json(['message' => 'No record available'], 200);
         }

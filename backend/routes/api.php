@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\QuestionController;
 use App\Http\Middleware\AdminMiddleware;
 
 // User DEFINITION
@@ -20,6 +21,20 @@ Route::get('/documents/{document}', [DocumentController::class, 'show'])->middle
 Route::put('/documents/{document}', [DocumentController::class, 'update'])->middleware(['auth:sanctum', AdminMiddleware::class]);
 Route::delete('/documents/{document}', [DocumentController::class, 'destroy'])->middleware(['auth:sanctum', AdminMiddleware::class]);
 Route::get('/documents/{document}/view', [DocumentController::class, 'view']);
+
+// QUESTION DEFINITION
+
+Route::post('/questions', [QuestionController::class, 'store'])->middleware('auth:sanctum');
+Route::get('/questions', [QuestionController::class, 'index'])->middleware(['auth:sanctum', AdminMiddleware::class]);
+Route::get('/questions/{question}', [QuestionController::class, 'show'])->middleware('auth:sanctum');
+Route::put('/questions/{question}', [QuestionController::class, 'update'])->middleware('auth:sanctum');
+Route::delete('/questions/{question}', [QuestionController::class, 'destroy'])->middleware(['auth:sanctum', AdminMiddleware::class]);
+Route::get('/questions/{document_id}/questions', [QuestionController::class, 'getByDocument'])->middleware(['auth:sanctum', AdminMiddleware::class]);
+Route::get('/questions/{document_id}/users', [QuestionController::class, 'getByUser'])->middleware('auth:sanctum');
+
+
+
+
 
 
 
