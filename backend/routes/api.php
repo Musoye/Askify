@@ -19,7 +19,7 @@ Route::get('/documents', [DocumentController::class, 'index'])->middleware('auth
 Route::get('/documents/{document}', [DocumentController::class, 'show'])->middleware('auth:sanctum');
 Route::put('/documents/{document}', [DocumentController::class, 'update'])->middleware(['auth:sanctum', AdminMiddleware::class]);
 Route::delete('/documents/{document}', [DocumentController::class, 'destroy'])->middleware(['auth:sanctum', AdminMiddleware::class]);
-Route::get('/documents/{document}/view', [DocumentController::class, 'view'])->middleware('auth:sanctum');
+Route::get('/documents/{document}/view', [DocumentController::class, 'view']);
 
 
 

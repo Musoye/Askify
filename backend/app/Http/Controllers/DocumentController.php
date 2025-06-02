@@ -49,7 +49,7 @@ class DocumentController extends Controller
         }
         ;
 
-        $user_id = auth()->user();
+       $user_id = auth()->id();
 
         $path = $request->file('file')->store('documents', 'public');
 

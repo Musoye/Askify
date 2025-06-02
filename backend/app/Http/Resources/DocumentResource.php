@@ -18,6 +18,7 @@ class documentResource extends JsonResource
         return [
             'id' => $this->id,
             'user_id' => $this->user_id,
+            'title' => $this->title,
             'file_path' => $this->file_path,
             'gemini_id' => $this->gemini_id,
             'created_at' => $this->created_at,
