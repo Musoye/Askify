@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Question;
+use App\Models\Document;
 use Illuminate\Http\Request;
 use App\Http\Resources\QuestionResource;
 use Illuminate\Support\Facades\Validator;
+use App\Services\GeminiService;
 class QuestionController extends Controller
 {
     /**
@@ -41,14 +43,35 @@ class QuestionController extends Controller
             ], 422);
         }
 
+        // Create the question first
         $question = Question::create([
-            'user_id' => auth()->id(),
+            'user_id' => auth()->id(),   // Use authenticated user
             'document_id' => $request->document_id,
             'question' => $request->question,
         ]);
 
+        // Load the document model
+        $document = Document::findOrFail($request->document_id);
+
+        // Initialize GeminiService
+        $gemini = new GeminiService();
+
+        try {
+            // Ask Gemini the question with the document
+            $answer = $gemini->ask($document, $request->question);
+
+            // Save the answer in the question model
+            $question->answer = $answer;
+            $question->save();
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to get answer from Gemini',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+
         return response()->json([
-            'message' => 'Question submitted',
+            'message' => 'Question submitted and answered',
             'data' => $question,
         ], 201);
     }

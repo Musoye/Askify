@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Resources\DocumentResource;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
+use App\Services\GeminiService;
 
 class DocumentController extends Controller
 {
@@ -38,6 +39,7 @@ class DocumentController extends Controller
         $validator = Validator::make($request->all(), [
             'title' => 'required|string',
             'file' => 'required|file|mimes:txt,pdf,md',
+            'description' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -46,24 +48,37 @@ class DocumentController extends Controller
                 'errors' => $validator->messages()
             ], 422);
         }
-        ;
 
-       $user_id = auth()->id();
+        $user_id = auth()->id();
 
+        // Save file locally
         $path = $request->file('file')->store('documents', 'public');
 
+        // Create document record
         $doc = Document::create([
             'user_id' => $user_id,
             'title' => $request->title,
             'file_path' => $path,
+            'description' => $request->description,
         ]);
 
+        // Upload to Gemini
+        try {
+            $geminiService = new GeminiService();
+            $geminiService->ensureFileIsFresh($doc);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Document saved locally, but failed to upload to Gemini.',
+                'error' => $e->getMessage(),
+                'data' => new DocumentResource($doc)
+            ], 500);
+        }
+
         return response()->json([
-            'message' => 'Document has been created',
+            'message' => 'Document has been uploaded and linked to Gemini',
             'status' => 201,
             'data' => new DocumentResource($doc)
         ], 201);
-
     }
 
     /**

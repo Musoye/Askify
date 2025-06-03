@@ -21,6 +21,9 @@ class documentResource extends JsonResource
             'title' => $this->title,
             'file_path' => $this->file_path,
             'gemini_id' => $this->gemini_id,
+            'upload_version' => $this->upload_version,
+            'expires_at' => $this->expires_at,
+            'description' => $this->description,
             'created_at' => $this->created_at,
         ];
     }
