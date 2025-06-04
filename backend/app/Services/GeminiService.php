@@ -162,8 +162,9 @@ class GeminiService
         $base64EncodedPdf = base64_encode($pdfContents);
 
         // Prepare the prompt and payload
-        $prompt = "Answer the following question using the attached PDF content Returned a plain text without no markdown.\
-        You can however use thos \n \t to format propoerly:\n\n{$question}";
+        $prompt = "Use the attached PDF content to answer the following question. \
+        Return your response as plain text only — do not use Markdown, headings, or bullet points. \
+        You may use \n for new lines and \t for indentation to improve formatting and clarity.:\n\n{$question}";
 
         $payload = [
             'contents' => [
