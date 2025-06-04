@@ -117,7 +117,7 @@ class GeminiService
 
         $response = Http::withHeaders([
             'Content-Type' => 'application/json',
-        ])->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" . $this->getApiKey(), [
+        ])->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" . $this->getApiKey(), [
                     'contents' => [
                         [
                             'parts' => [
