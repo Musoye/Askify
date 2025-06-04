@@ -2,9 +2,13 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '../utils/api.js'
-import { setAuthToken, setUserData } from '../utils/auth.js'
+import { setAuthToken, setUserData, isAuthenticated } from '../utils/auth.js'
 
 const router = useRouter()
+
+if (isAuthenticated()){
+  router.push('/admin')
+}
 
 const form = ref({
   email: '',

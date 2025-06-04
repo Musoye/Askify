@@ -1,60 +1,74 @@
 <template>
   <div class="document-view">
-    <nav class="document-nav">
-      <div class="container">
-        <div class="nav-content">
-          <button @click="goBack" class="back-btn">← Back</button>
-          <h2 v-if="document">{{ document.title }}</h2>
-          <router-link 
-            v-if="document" 
-            :to="`/chat/${document.id}`" 
-            class="btn"
-          >
-            💬 Ask Questions
-          </router-link>
-        </div>
+    <!-- Minimal Navigation Header -->
+    <nav class="nav">
+      <div class="nav-container">
+        <button @click="goBack" class="back-btn">
+          ← Back
+        </button>
+        <h2 v-if="document" class="doc-title">{{ document.title }}</h2>
+        <router-link 
+          v-if="document" 
+          :to="`/chat/${document.id}`" 
+          class="chat-btn"
+        >
+          💬 Ask Questions
+        </router-link>
       </div>
     </nav>
 
-    <main class="document-main">
+    <!-- Main Content Area -->
+    <main class="main">
       <div class="container">
-        <div v-if="loading" class="loading">
-          Loading document...
+        <!-- Loading State -->
+        <div v-if="loading" class="state loading-state">
+          <div class="spinner"></div>
+          <p>Loading document...</p>
         </div>
-        <div v-else-if="error" class="error-state">
+
+        <!-- Error State -->
+        <div v-else-if="error" class="state error-state">
           <div class="error-icon">⚠️</div>
           <h3>Error Loading Document</h3>
           <p>{{ error }}</p>
           <button @click="goBack" class="btn">Go Back</button>
         </div>
-        <div v-else-if="document" class="document-content">
-          <div class="document-header">
-            <h1>{{ document.title }}</h1>
-            <p v-if="document.description" class="document-description">
+
+        <!-- Document Content -->
+        <div v-else-if="document" class="document">
+          <!-- Document Header -->
+          <header class="doc-header">
+            <h1 class="doc-main-title">{{ document.title }}</h1>
+            <p v-if="document.description" class="doc-description">
               {{ document.description }}
             </p>
-            <div class="document-meta">
-              <span>Uploaded: {{ formatDate(document.created_at) }}</span>
+            <div class="doc-meta">
+              Uploaded {{ formatDate(document.created_at) }}
             </div>
-          </div>
+          </header>
           
-          <div class="document-viewer">
+          <!-- Document Viewer -->
+          <div class="viewer">
+            <!-- Text Content -->
             <div v-if="isTextFile" class="text-content">
               {{ documentContent }}
             </div>
+            
+            <!-- PDF Viewer -->
             <div v-else-if="isPdfFile" class="pdf-viewer">
               <iframe 
                 :src="getDocumentUrl()" 
-                width="100%" 
-                height="800px"
+                class="pdf-frame"
                 frameborder="0"
               ></iframe>
             </div>
-            <div v-else class="file-download">
+            
+            <!-- File Download -->
+            <div v-else class="download-section">
               <div class="download-icon">📄</div>
               <h3>{{ document.title }}</h3>
               <p>This file type cannot be displayed in the browser.</p>
-              <a :href="getDocumentUrl()" target="_blank" class="btn">
+              <a :href="getDocumentUrl()" target="_blank" class="download-btn">
                 📥 Download File
               </a>
             </div>
@@ -69,7 +83,6 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import api from '../utils/api.js'
-
 import { isAuthenticated } from '../utils/auth.js'
 
 const route = useRoute()
@@ -144,101 +157,264 @@ const goBack = () => {
 <style scoped>
 .document-view {
   min-height: 100vh;
-  background: #f8f9fa;
+  background: #fafafa;
 }
 
-.document-nav {
+/* Navigation */
+.nav {
   background: white;
-  border-bottom: 1px solid #e9ecef;
-  padding: 1rem 0;
+  border-bottom: 1px solid #f0f0f0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
-.nav-content {
+.nav-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  height: 60px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
 }
 
 .back-btn {
   background: none;
   border: none;
-  color: #667eea;
+  color: #666;
   cursor: pointer;
-  font-size: 1rem;
-  padding: 0.5rem;
+  font-size: 14px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
 }
 
-.document-main {
-  padding: 2rem 0;
-}
-
-.document-content {
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.document-header {
-  padding: 2rem;
-  border-bottom: 1px solid #e9ecef;
-}
-
-.document-header h1 {
-  margin-bottom: 0.5rem;
+.back-btn:hover {
+  background: #f5f5f5;
   color: #333;
 }
 
-.document-description {
+.doc-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+  margin: 0;
+  flex: 1;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 1rem;
+}
+
+.chat-btn {
+  background: #007aff;
+  color: white;
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.chat-btn:hover {
+  background: #0056b3;
+}
+
+/* Main Content */
+.main {
+  padding: 2rem 0;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+/* States */
+.state {
+  text-align: center;
+  padding: 4rem 2rem;
   color: #666;
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #f0f0f0;
+  border-top: 2px solid #007aff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-state .error-icon {
+  font-size: 3rem;
   margin-bottom: 1rem;
+}
+
+.error-state h3 {
+  margin: 0 0 0.5rem 0;
+  color: #333;
+}
+
+.error-state p {
+  margin: 0 0 1.5rem 0;
+}
+
+.btn {
+  background: #007aff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  background: #0056b3;
+}
+
+/* Document */
+.document {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.doc-header {
+  padding: 2rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.doc-main-title {
+  margin: 0 0 0.75rem 0;
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #333;
+  line-height: 1.3;
+}
+
+.doc-description {
+  margin: 0 0 1rem 0;
+  color: #666;
   line-height: 1.5;
+  font-size: 15px;
 }
 
-.document-meta {
+.doc-meta {
   color: #999;
-  font-size: 0.875rem;
+  font-size: 13px;
 }
 
-.document-viewer {
+/* Viewer */
+.viewer {
   padding: 2rem;
 }
 
 .text-content {
-  font-family: 'Georgia', serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.6;
   color: #333;
   white-space: pre-wrap;
+  font-size: 15px;
 }
 
-.pdf-viewer iframe {
-  border-radius: 8px;
+.pdf-viewer {
+  border-radius: 6px;
+  overflow: hidden;
 }
 
-.file-download {
+.pdf-frame {
+  width: 100%;
+  height: 800px;
+  border-radius: 6px;
+}
+
+.download-section {
   text-align: center;
-  padding: 3rem;
+  padding: 3rem 2rem;
 }
 
 .download-icon {
-  font-size: 4rem;
+  font-size: 3rem;
   margin-bottom: 1rem;
 }
 
-.error-state {
-  text-align: center;
-  padding: 3rem;
+.download-section h3 {
+  margin: 0 0 0.5rem 0;
+  color: #333;
+}
+
+.download-section p {
+  margin: 0 0 1.5rem 0;
   color: #666;
 }
 
-.error-icon {
-  font-size: 4rem;
-  margin-bottom: 1rem;
+.download-btn {
+  background: #007aff;
+  color: white;
+  text-decoration: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  display: inline-block;
+  transition: all 0.2s ease;
 }
 
-.loading {
-  text-align: center;
-  padding: 3rem;
-  color: #666;
+.download-btn:hover {
+  background: #0056b3;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .nav-container {
+    padding: 0 1rem;
+  }
+  
+  .doc-title {
+    font-size: 14px;
+  }
+  
+  .container {
+    padding: 0 1rem;
+  }
+  
+  .doc-header {
+    padding: 1.5rem;
+  }
+  
+  .viewer {
+    padding: 1.5rem;
+  }
+  
+  .doc-main-title {
+    font-size: 1.5rem;
+  }
+  
+  .pdf-frame {
+    height: 600px;
+  }
 }
 </style>

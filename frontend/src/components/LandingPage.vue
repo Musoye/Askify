@@ -1,3 +1,15 @@
+<script setup>
+import { useRouter } from 'vue-router'
+
+import { isAuthenticated } from '../utils/auth.js'
+
+const router = useRouter()
+
+if (isAuthenticated()){
+  router.push('/admin')
+}
+</script>
+
 <template>
   <div class="landing-page">
     <nav class="navbar">
@@ -123,17 +135,6 @@
   </div>
 </template>
 
-<script setup>
-import { useRouter } from 'vue-router'
-
-import { isAuthenticated } from '../utils/auth.js'
-
-const router = useRouter()
-
-if (isAuthenticated()){
-  router.push('/admin')
-}
-</script>
 
 <style scoped>
 .landing-page {
