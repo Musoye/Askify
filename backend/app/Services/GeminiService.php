@@ -64,19 +64,21 @@ class GeminiService
         }
 
         $fileId = $fileData['name'];
+        $uri = $fileData['uri'];
 
         // Use expirationTime from response if available, else fallback to 23 hours
-        $expirationTime = isset($fileData['expirationTime']) 
-            ? Carbon::parse($fileData['expirationTime']) 
+        $expirationTime = isset($fileData['expirationTime'])
+            ? Carbon::parse($fileData['expirationTime'])
             : now()->addHours(23);
 
         $document->update([
             'gemini_id' => $fileId,
             'upload_version' => $version + 1,
             'expires_at' => $expirationTime,
+            'uri' => $uri,
         ]);
 
-        return $fileId;
+        return $uri;
     }
 
     /**
@@ -93,7 +95,7 @@ class GeminiService
 
         return $shouldReupload
             ? $this->uploadFile($document)
-            : $document->gemini_id;
+            : $document->uri;
     }
 
     /**
@@ -105,23 +107,31 @@ class GeminiService
      * 
      * @throws \Exception If Gemini request fails.
      */
+
     public function ask(Document $document, string $question): string
     {
-        $fileId = $this->ensureFileIsFresh($document);
+        // Get the correct file URI and MIME type (you must implement this)
+        $fileId = $this->ensureFileIsFresh($document); // e.g., "gs://your-bucket/file.pdf"
 
         $prompt = "Answer the following question using the uploaded file content:\n\n{$question}";
 
         $response = Http::withHeaders([
-            'Authorization' => "Bearer " . $this->getApiKey(),
             'Content-Type' => 'application/json',
-        ])->post("{$this->baseUrl}/models/gemini-1.5-pro:generateContent", [
-            'contents' => [
-                ['parts' => [['text' => $prompt]]],
-            ],
-            'tools' => [
-                ['fileData' => ['fileId' => $fileId]],
-            ],
-        ]);
+        ])->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" . $this->getApiKey(), [
+                    'contents' => [
+                        [
+                            'parts' => [
+                                ['text' => $prompt],
+                                [
+                                    'file_data' => [
+                                        'mime_type' => 'application/pdf',
+                                        'file_uri' => $fileId,
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]);
 
         if ($response->failed()) {
             throw new \Exception('Gemini failed to answer: ' . $response->body());
@@ -129,4 +139,62 @@ class GeminiService
 
         return $response->json('candidates.0.content.parts.0.text', 'No response.');
     }
+
+    /**
+     * Ask a question by embedding a base64-encoded PDF into the Gemini request.
+     *
+     * @param Document $document
+     * @param string $question
+     * @return string Answer text
+     *
+     * @throws \Exception If the file is missing or the Gemini API fails.
+     */
+    public function ask_upload(Document $document, string $question): string
+    {
+        // Locate the file
+        $filePath = storage_path("app/public/{$document->file_path}");
+        if (!file_exists($filePath)) {
+            throw new \Exception('File does not exist on server.');
+        }
+
+        // Read and base64-encode the PDF file
+        $pdfContents = file_get_contents($filePath);
+        $base64EncodedPdf = base64_encode($pdfContents);
+
+        // Prepare the prompt and payload
+        $prompt = "Answer the following question using the attached PDF content Returned a plain text without no markdown.\
+        You can however use thos \n \t to format propoerly:\n\n{$question}";
+
+        $payload = [
+            'contents' => [
+                [
+                    'parts' => [
+                        [
+                            'inline_data' => [
+                                'mime_type' => 'application/pdf',
+                                'data' => $base64EncodedPdf,
+                            ]
+                        ],
+                        [
+                            'text' => $prompt
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        // Make the POST request
+        $response = Http::withHeaders([
+            'Content-Type' => 'application/json',
+        ])->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" . $this->getApiKey(), $payload);
+
+        if ($response->failed()) {
+            throw new \Exception('Gemini failed to answer: ' . $response->body());
+        }
+
+        return $response->json('candidates.0.content.parts.0.text', 'No response.');
+    }
+
+
+
 }

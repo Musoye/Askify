@@ -31,7 +31,6 @@ class QuestionController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'user_id' => 'required|exists:users,id',
             'document_id' => 'required|exists:documents,id',
             'question' => 'required|string|max:1000',
         ]);
@@ -58,7 +57,7 @@ class QuestionController extends Controller
 
         try {
             // Ask Gemini the question with the document
-            $answer = $gemini->ask($document, $request->question);
+            $answer = $gemini->ask_upload($document, $request->question);
 
             // Save the answer in the question model
             $question->answer = $answer;

@@ -63,19 +63,19 @@ class DocumentController extends Controller
         ]);
 
         // Upload to Gemini
-        try {
-            $geminiService = new GeminiService();
-            $geminiService->ensureFileIsFresh($doc);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Document saved locally, but failed to upload to Gemini.',
-                'error' => $e->getMessage(),
-                'data' => new DocumentResource($doc)
-            ], 500);
-        }
+        // try {
+        //     $geminiService = new GeminiService();
+        //     $geminiService->ensureFileIsFresh($doc);
+        // } catch (\Exception $e) {
+        //     return response()->json([
+        //         'message' => 'Document saved locally, but failed to upload to Gemini.',
+        //         'error' => $e->getMessage(),
+        //         'data' => new DocumentResource($doc)
+        //     ], 500);
+        // }
 
         return response()->json([
-            'message' => 'Document has been uploaded and linked to Gemini',
+            'message' => 'Document has been uploaded and Succesfully',
             'status' => 201,
             'data' => new DocumentResource($doc)
         ], 201);

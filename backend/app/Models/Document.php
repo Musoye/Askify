@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Document extends Model
 {
     protected $fillable = ['user_id', 'title', 'file_path', 'gemini_id',
-    'upload_version', 'expires_at', 'description'];
+    'upload_version', 'expires_at', 'description', 'uri'];
 
     public function user()
     {

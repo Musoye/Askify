@@ -24,6 +24,7 @@ class documentResource extends JsonResource
             'upload_version' => $this->upload_version,
             'expires_at' => $this->expires_at,
             'description' => $this->description,
+            'uri' => $this->uri,
             'created_at' => $this->created_at,
         ];
     }
