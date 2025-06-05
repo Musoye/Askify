@@ -1,29 +1,52 @@
-# frontend
+# Askify
 
-This template should help get you started developing with Vue 3 in Vite.
+>   Askify is an AI-powered learning assistant that helps students ask questions about their lesson documents. Admins can upload and manage documents, while students can query them intelligently using natural language. Askify connects with Gemini to analyze document content and provide smart, instant answers all from a simple Laravel backend.
 
-## Recommended IDE Setup
+### Installation
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+Built using Vue.js. Uses Vue Router for page navigation.
 
-## Customize configuration
+1. Clone the repo
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+```bash
+git clone https://github.com/Musoye/Askify.git
+cd Askify
+```
 
-## Project Setup
+2. Install frontend dependencies
 
-```sh
+```bash
+cd frontend
 npm install
 ```
 
-### Compile and Hot-Reload for Development
+3. Running the App
 
-```sh
+Run frontend server:
+
+```bash
+# Make sure you are in frontend directory
+cd ./frontend
+
+# Start frontend dev server
 npm run dev
+
+# Compile and Minify for Production
+npm run build
 ```
 
-### Compile and Minify for Production
+### Routing
 
-```sh
-npm run build
+Routing is handled with `vue-router`:
+
+```js
+const routes = [
+  { path: "/", component: LandingPage },
+  { path: "/signup", component: SignUp },
+  { path: "/login", component: Login },
+  { path: "/admin", component: AdminDashboard },
+  { path: "/student", component: StudentDashboard },
+  { path: "/document/:id", component: DocumentView },
+  { path: "/chat/:id", component: ChatWithDocument },
+];
 ```
