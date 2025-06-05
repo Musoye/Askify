@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '../utils/api.js'
 import { setAuthToken, setUserData, isAuthenticated } from '../utils/auth.js'
@@ -20,6 +20,7 @@ const form = ref({
 const loading = ref(false)
 const error = ref('')
 const success = ref('')
+const isScrolled = ref(false)
 
 const handleSignUp = async () => {
   loading.value = true
@@ -50,84 +51,109 @@ const handleSignUp = async () => {
     loading.value = false
   }
 }
+
+const handleScroll = () => {
+  isScrolled.value = window.scrollY > 50
+}
+
+onMounted(() => {
+  window.addEventListener('scroll', handleScroll)
+  // Check initial scroll position
+  handleScroll()
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
+})
 </script>
 
 <template>
-  <div class="auth-page">
-    <div class="background-elements">
-      <div class="bg-circle bg-circle-1"></div>
-      <div class="bg-circle bg-circle-2"></div>
-      <div class="bg-circle bg-circle-3"></div>
-    </div>
-    
-    <div class="container">
-      <div class="auth-card">
-        <div class="auth-header">
-          <router-link to="/" class="back-link">
-            <span class="back-icon">←</span>
-            Back to Home
-          </router-link>
-          <div class="brand-section">
-            <div class="brand-icon">🤖</div>
-            <h2>Create Account</h2>
-            <p>Join Askify and start learning</p>
-          </div>
-        </div>
+  <div class="signup-page" :class="{ 'scrolled': isScrolled }">
+    <div class="signup-container" :class="{ 'compact': isScrolled }">
+      <!-- Header Section -->
+      <div class="signup-header">
+        <router-link to="/" class="back-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Back to Home
+        </router-link>
         
-        <form @submit.prevent="handleSignUp" class="auth-form">
-          <div class="form-row">
-            <div class="form-group">
-              <label for="name">Full Name</label>
-              <div class="input-wrapper">
-                <span class="input-icon">👤</span>
-                <input 
-                  id="name"
-                  v-model="form.name" 
-                  type="text" 
-                  class="form-control" 
-                  required 
-                  placeholder="Enter your name"
-                />
-              </div>
+        <div class="brand-section">
+          <div class="brand-icon">A</div>
+          <h1 class="signup-title">Create your account</h1>
+          <p class="signup-subtitle">Join Askify and start learning</p>
+        </div>
+      </div>
+
+      <!-- Signup Form -->
+      <div class="signup-form-container">
+        <form @submit.prevent="handleSignUp" class="signup-form">
+          <div class="form-group">
+            <label for="name" class="form-label">Full name</label>
+            <div class="input-container">
+              <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <input 
+                id="name"
+                v-model="form.name" 
+                type="text" 
+                class="form-input" 
+                placeholder="Enter your full name"
+                required 
+              />
             </div>
-            
-            <div class="form-group">
-              <label for="email">Email</label>
-              <div class="input-wrapper">
-                <span class="input-icon">📧</span>
-                <input 
-                  id="email"
-                  v-model="form.email" 
-                  type="email" 
-                  class="form-control" 
-                  required 
-                  placeholder="Enter email"
-                />
-              </div>
+          </div>
+
+          <div class="form-group">
+            <label for="email" class="form-label">Email address</label>
+            <div class="input-container">
+              <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <polyline points="22,6 12,13 2,6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <input 
+                id="email"
+                v-model="form.email" 
+                type="email" 
+                class="form-input" 
+                placeholder="Enter your email"
+                required 
+              />
             </div>
           </div>
           
+          <!-- Password and Role on the same line -->
           <div class="form-row">
-            <div class="form-group">
-              <label for="password">Password</label>
-              <div class="input-wrapper">
-                <span class="input-icon">🔒</span>
+            <div class="form-group form-group-half">
+              <label for="password" class="form-label">Password</label>
+              <div class="input-container">
+                <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <circle cx="12" cy="16" r="1" fill="currentColor"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
                 <input 
                   id="password"
                   v-model="form.password" 
                   type="password" 
-                  class="form-control" 
+                  class="form-input" 
+                  placeholder="Password"
                   required 
-                  placeholder="Create password"
                 />
               </div>
             </div>
-            
-            <div class="form-group">
-              <label for="role">Account Type</label>
-              <div class="input-wrapper">
-                <span class="input-icon">🎓</span>
-                <select id="role" v-model="form.role" class="form-control" required>
+
+            <div class="form-group form-group-half">
+              <label for="role" class="form-label">Account type</label>
+              <div class="input-container">
+                <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 14l9-5-9-5-9 5 9 5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <select id="role" v-model="form.role" class="form-input form-select" required>
                   <option value="student">Student</option>
                   <option value="admin">Teacher/Admin</option>
                 </select>
@@ -135,24 +161,34 @@ const handleSignUp = async () => {
             </div>
           </div>
           
-          <div v-if="error" class="alert alert-error">
-            <span class="alert-icon">⚠️</span>
+          <div v-if="success" class="success-alert">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <polyline points="22,4 12,14.01 9,11.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            {{ success }}
+          </div>
+
+          <div v-if="error" class="error-alert">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="12" y1="8" x2="12" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="12" y1="16" x2="12.01" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
             {{ error }}
           </div>
           
-          <div v-if="success" class="alert alert-success">
-            <span class="alert-icon">✅</span>
-            {{ success }}
-          </div>
-          
-          <button type="submit" class="btn btn-full" :disabled="loading">
-            <span v-if="loading" class="loading-spinner"></span>
-            {{ loading ? 'Creating...' : 'Create Account' }}
+          <button type="submit" class="signup-button" :disabled="loading">
+            <div v-if="loading" class="loading-spinner"></div>
+            <span>{{ loading ? 'Creating account...' : 'Create account' }}</span>
           </button>
         </form>
         
-        <div class="auth-footer">
-          <p>Already have an account? <router-link to="/login">Sign in</router-link></p>
+        <div class="signup-footer">
+          <p class="footer-text">
+            Already have an account? 
+            <router-link to="/login" class="footer-link">Sign in</router-link>
+          </p>
         </div>
       </div>
     </div>
@@ -160,301 +196,334 @@ const handleSignUp = async () => {
 </template>
 
 <style scoped>
-.auth-page {
+* {
+  box-sizing: border-box;
+}
+
+.signup-page {
   min-height: 100vh;
+  background: #fafbfc;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 1.5rem 1rem;
+  transition: padding 0.3s ease;
+}
+
+.signup-page.scrolled {
   padding: 1rem;
-  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 25%, #60a5fa 50%, #93c5fd 75%, #dbeafe 100%);
-  position: relative;
+  align-items: flex-start;
+  padding-top: 1rem;
+}
+
+.signup-container {
+  width: 100%;
+  max-width: 420px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e5e7eb;
   overflow: hidden;
-}
-
-.background-elements {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.bg-circle {
-  position: absolute;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(20px);
-}
-
-.bg-circle-1 {
-  width: 150px;
-  height: 150px;
-  top: 10%;
-  left: 10%;
-  animation: float 6s ease-in-out infinite;
-}
-
-.bg-circle-2 {
-  width: 120px;
-  height: 120px;
-  top: 60%;
-  right: 15%;
-  animation: float 8s ease-in-out infinite reverse;
-}
-
-.bg-circle-3 {
-  width: 80px;
-  height: 80px;
-  bottom: 20%;
-  left: 20%;
-  animation: float 7s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-15px); }
-}
-
-.container {
-  max-width: 480px;
-  width: 100%;
-  position: relative;
-  z-index: 1;
-}
-
-.auth-card {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  border-radius: 20px;
-  box-shadow: 
-    0 20px 40px rgba(0, 0, 0, 0.15),
-    0 0 0 1px rgba(255, 255, 255, 0.2);
-  padding: 2rem 1.75rem;
-  width: 100%;
-  border: 1px solid rgba(255, 255, 255, 0.2);
   transition: all 0.3s ease;
 }
 
-.auth-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 
-    0 25px 50px rgba(0, 0, 0, 0.2),
-    0 0 0 1px rgba(255, 255, 255, 0.3);
+.signup-container.compact {
+  border-radius: 12px;
+  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);
 }
 
-.auth-header {
+/* Header Section */
+.signup-header {
+  padding: 1.5rem 2rem 1.25rem 2rem;
   text-align: center;
-  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #f3f4f6;
+  transition: padding 0.3s ease;
+}
+
+.compact .signup-header {
+  padding: 1rem 1.5rem 0.75rem 1.5rem;
 }
 
 .back-link {
   display: inline-flex;
   align-items: center;
-  gap: 0.375rem;
-  color: #3b82f6;
+  gap: 0.5rem;
+  color: #6b7280;
   text-decoration: none;
-  margin-bottom: 1rem;
+  font-size: 14px;
   font-weight: 500;
-  padding: 0.375rem 0.75rem;
-  border-radius: 50px;
-  background: rgba(59, 130, 246, 0.1);
+  margin-bottom: 1.25rem;
   transition: all 0.3s ease;
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  font-size: 0.9rem;
+}
+
+.compact .back-link {
+  margin-bottom: 0.75rem;
+  font-size: 13px;
 }
 
 .back-link:hover {
-  background: rgba(59, 130, 246, 0.15);
-  transform: translateX(-2px);
-}
-
-.back-icon {
-  font-size: 1.1rem;
-  transition: transform 0.3s ease;
-}
-
-.back-link:hover .back-icon {
-  transform: translateX(-2px);
+  color: #3b82f6;
 }
 
 .brand-section {
-  margin-bottom: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  transition: gap 0.3s ease;
+}
+
+.compact .brand-section {
+  gap: 0.375rem;
 }
 
 .brand-icon {
-  font-size: 2.5rem;
-  margin-bottom: 0.5rem;
-  display: inline-block;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-}
-
-.auth-header h2 {
-  color: #1e3a8a;
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 18px;
   margin-bottom: 0.25rem;
-  font-size: 1.75rem;
-  font-weight: 800;
-  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  transition: all 0.3s ease;
 }
 
-.auth-header p {
-  color: #64748b;
-  font-size: 0.9rem;
-  font-weight: 500;
+.compact .brand-icon {
+  width: 36px;
+  height: 36px;
+  font-size: 16px;
+  margin-bottom: 0.125rem;
+}
+
+.signup-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #111827;
   margin: 0;
+  transition: font-size 0.3s ease;
 }
 
-.auth-form {
+.compact .signup-title {
+  font-size: 18px;
+}
+
+.signup-subtitle {
+  font-size: 15px;
+  color: #6b7280;
+  margin: 0;
+  transition: font-size 0.3s ease;
+}
+
+.compact .signup-subtitle {
+  font-size: 13px;
+}
+
+/* Form Section */
+.signup-form-container {
+  padding: 1.5rem 2rem;
+  transition: padding 0.3s ease;
+}
+
+.compact .signup-form-container {
+  padding: 1.25rem 1.5rem;
+}
+
+.signup-form {
   margin-bottom: 1.25rem;
+  transition: margin 0.3s ease;
 }
 
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+.compact .signup-form {
   margin-bottom: 1rem;
 }
 
 .form-group {
+  margin-bottom: 1.25rem;
+  transition: margin 0.3s ease;
+}
+
+.compact .form-group {
+  margin-bottom: 1rem;
+}
+
+/* Form row for inline fields */
+.form-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.compact .form-row {
+  margin-bottom: 1rem;
+  gap: 0.75rem;
+}
+
+.form-group-half {
+  flex: 1;
   margin-bottom: 0;
 }
 
-.form-group label {
+.form-label {
   display: block;
   margin-bottom: 0.375rem;
-  color: #1e3a8a;
-  font-weight: 600;
-  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  font-size: 13px;
+  transition: all 0.3s ease;
 }
 
-.input-wrapper {
+.compact .form-label {
+  margin-bottom: 0.25rem;
+  font-size: 12px;
+}
+
+.input-container {
   position: relative;
-  display: flex;
-  align-items: center;
 }
 
 .input-icon {
   position: absolute;
-  left: 0.75rem;
-  z-index: 2;
-  font-size: 1rem;
-  opacity: 0.7;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  z-index: 1;
+  transition: left 0.3s ease;
 }
 
-.form-control {
+.compact .input-icon {
+  left: 8px;
+}
+
+.form-input {
   width: 100%;
-  padding: 0.75rem 0.75rem 0.75rem 2.5rem;
-  border: 2px solid rgba(59, 130, 246, 0.2);
-  border-radius: 10px;
-  font-size: 0.9rem;
-  background: rgba(255, 255, 255, 0.9);
+  padding: 10px 10px 10px 32px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 15px;
+  background: white;
   transition: all 0.3s ease;
-  color: #1e3a8a;
+  color: #111827;
 }
 
-.form-control:focus {
+.compact .form-input {
+  padding: 8px 8px 8px 28px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.form-input:focus {
   outline: none;
   border-color: #3b82f6;
-  background: white;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  transform: translateY(-1px);
 }
 
-.form-control::placeholder {
-  color: #94a3b8;
+.form-input::placeholder {
+  color: #9ca3af;
 }
 
-select.form-control {
+.form-select {
   cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 10px center;
+  background-repeat: no-repeat;
+  background-size: 16px 12px;
+  padding-right: 32px;
+  transition: all 0.3s ease;
 }
 
-.alert {
-  padding: 0.75rem;
-  border-radius: 10px;
-  margin-bottom: 1rem;
+.compact .form-select {
+  background-position: right 8px center;
+  padding-right: 28px;
+}
+
+.success-alert {
+  background: #f0fdf4;
+  color: #16a34a;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 1.25rem;
+  border: 1px solid #bbf7d0;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-weight: 500;
-  font-size: 0.875rem;
+  gap: 6px;
+  transition: all 0.3s ease;
 }
 
-.alert-error {
-  background: rgba(239, 68, 68, 0.1);
+.compact .success-alert {
+  padding: 8px;
+  font-size: 12px;
+  margin-bottom: 1rem;
+  border-radius: 6px;
+}
+
+.error-alert {
+  background: #fef2f2;
   color: #dc2626;
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 1.25rem;
+  border: 1px solid #fecaca;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.3s ease;
 }
 
-.alert-success {
-  background: rgba(34, 197, 94, 0.1);
-  color: #16a34a;
-  border: 1px solid rgba(34, 197, 94, 0.2);
+.compact .error-alert {
+  padding: 8px;
+  font-size: 12px;
+  margin-bottom: 1rem;
+  border-radius: 6px;
 }
 
-.alert-icon {
-  font-size: 1rem;
-}
-
-.btn-full {
+.signup-button {
   width: 100%;
-  margin-top: 0.5rem;
-  padding: 0.875rem 1.5rem;
-  background: linear-gradient(135deg, #3b82f6 0%, #1e3a8a 100%);
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
   color: white;
   border: none;
-  border-radius: 10px;
-  font-size: 1rem;
-  font-weight: 700;
+  padding: 11px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 15px;
   cursor: pointer;
   transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 8px;
+  min-height: 44px;
 }
 
-.btn-full::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.5s;
+.compact .signup-button {
+  padding: 9px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  min-height: 40px;
 }
 
-.btn-full:hover::before {
-  left: 100%;
+.signup-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  transform: translateY(-1px);
 }
 
-.btn-full:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4);
-  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
-}
-
-.btn-full:disabled {
-  opacity: 0.7;
+.signup-button:disabled {
+  opacity: 0.6;
   cursor: not-allowed;
   transform: none;
 }
 
 .loading-spinner {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-top: 2px solid white;
   border-radius: 50%;
@@ -462,116 +531,175 @@ select.form-control {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  to { transform: rotate(360deg); }
 }
 
-.auth-footer {
+/* Footer */
+.signup-footer {
   text-align: center;
-  margin-top: 1rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #f3f4f6;
+  transition: padding 0.3s ease;
+}
+
+.compact .signup-footer {
   padding-top: 1rem;
-  border-top: 1px solid rgba(59, 130, 246, 0.2);
 }
 
-.auth-footer p {
-  color: #64748b;
+.footer-text {
+  color: #6b7280;
+  font-size: 13px;
   margin: 0;
-  font-size: 0.9rem;
+  transition: font-size 0.3s ease;
 }
 
-.auth-footer a {
+.compact .footer-text {
+  font-size: 12px;
+}
+
+.footer-link {
   color: #3b82f6;
   text-decoration: none;
-  font-weight: 600;
-  transition: color 0.3s ease;
+  font-weight: 500;
+  transition: color 0.2s ease;
 }
 
-.auth-footer a:hover {
-  color: #1e3a8a;
+.footer-link:hover {
+  color: #2563eb;
   text-decoration: underline;
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
-  .form-row {
-    grid-template-columns: 1fr;
-    gap: 0.75rem;
-  }
-  
-  .auth-card {
-    padding: 1.5rem 1.25rem;
-    margin: 0.5rem;
-  }
-  
-  .auth-header h2 {
-    font-size: 1.5rem;
-  }
-  
-  .brand-icon {
-    font-size: 2rem;
-  }
-}
-
 @media (max-width: 480px) {
-  .auth-page {
+  .signup-page {
+    padding: 1rem 0.5rem;
+  }
+  
+  .signup-page.scrolled {
     padding: 0.5rem;
   }
   
-  .auth-card {
-    padding: 1.25rem 1rem;
+  .signup-container {
+    max-width: 370px;
   }
   
-  .auth-header h2 {
-    font-size: 1.4rem;
+  .signup-header {
+    padding: 1.25rem 1.5rem 1rem 1.5rem;
   }
   
-  .form-control {
-    padding: 0.625rem 0.625rem 0.625rem 2.25rem;
-    font-size: 0.875rem;
+  .compact .signup-header {
+    padding: 1rem 1.25rem 0.75rem 1.25rem;
   }
   
-  .input-icon {
-    left: 0.625rem;
-    font-size: 0.9rem;
+  .signup-form-container {
+    padding: 1.25rem 1.5rem;
   }
   
-  .btn-full {
-    padding: 0.75rem 1.25rem;
-    font-size: 0.9rem;
+  .compact .signup-form-container {
+    padding: 1rem 1.25rem;
   }
   
-  .back-link {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.825rem;
+  .form-row {
+    flex-direction: column;
+    gap: 1rem;
   }
   
-  .bg-circle-1 {
-    width: 100px;
-    height: 100px;
+  .compact .form-row {
+    gap: 0.75rem;
   }
   
-  .bg-circle-2 {
-    width: 80px;
-    height: 80px;
+  .form-group-half {
+    margin-bottom: 0;
   }
   
-  .bg-circle-3 {
-    width: 60px;
-    height: 60px;
+  .signup-title {
+    font-size: 18px;
+  }
+  
+  .compact .signup-title {
+    font-size: 16px;
+  }
+  
+  .signup-subtitle {
+    font-size: 13px;
+  }
+  
+  .compact .signup-subtitle {
+    font-size: 12px;
+  }
+  
+  .brand-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+  
+  .compact .brand-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+  
+  .form-input {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+  
+  .compact .form-input {
+    font-size: 15px;
   }
 }
 
 @media (max-width: 360px) {
-  .container {
+  .signup-container {
     max-width: 320px;
   }
   
-  .auth-card {
-    padding: 1rem 0.75rem;
+  .signup-header,
+  .signup-form-container {
+    padding: 1rem 1.25rem;
   }
   
-  .form-row {
-    gap: 0.5rem;
+  .compact .signup-header,
+  .compact .signup-form-container {
+    padding: 0.75rem 1rem;
+  }
+}
+
+/* Alternative approach using CSS media queries for viewport height */
+@media (max-height: 700px) {
+  .signup-page {
+    padding: 1rem;
+    align-items: flex-start;
+  }
+  
+  .signup-container {
+    border-radius: 12px;
+  }
+  
+  .signup-header {
+    padding: 1rem 1.5rem 0.75rem 1.5rem;
+  }
+  
+  .signup-form-container {
+    padding: 1.25rem 1.5rem;
+  }
+  
+  .form-group {
+    margin-bottom: 1rem;
+  }
+  
+  .brand-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+  
+  .signup-title {
+    font-size: 18px;
+  }
+  
+  .signup-subtitle {
+    font-size: 13px;
   }
 }
 </style>

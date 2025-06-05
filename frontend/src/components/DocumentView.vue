@@ -1,3 +1,78 @@
+<script setup>
+import { ref, onMounted, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import api from '../utils/api.js'
+import { isAuthenticated } from '../utils/auth.js'
+
+const route = useRoute()
+const router = useRouter()
+
+if (!isAuthenticated()){
+  router.push('/login')
+}
+
+const document = ref(null)
+const documentContent = ref('')
+const loading = ref(true)
+const error = ref('')
+
+const isTextFile = computed(() => {
+  if (!document.value?.file_path) return false
+  const extension = document.value.file_path.split('.').pop().toLowerCase()
+  return ['txt', 'md', 'markdown'].includes(extension)
+})
+
+const isPdfFile = computed(() => {
+  if (!document.value?.file_path) return false
+  const extension = document.value.file_path.split('.').pop().toLowerCase()
+  return extension === 'pdf'
+})
+
+onMounted(async () => {
+  await fetchDocument()
+})
+
+const fetchDocument = async () => {
+  try {
+    loading.value = true
+    const documentId = route.params.id
+    
+    // Fetch document metadata
+    const response = await api.get(`/documents/${documentId}`)
+    document.value = response.data.data || response.data
+    
+    // If it's a text file, fetch content
+    if (isTextFile.value) {
+      try {
+        const contentResponse = await api.get(`/documents/${documentId}/view`)
+        documentContent.value = contentResponse.data
+      } catch (contentError) {
+        console.error('Failed to load document content:', contentError)
+      }
+    }
+  } catch (err) {
+    error.value = err.response?.data?.message || 'Failed to load document'
+  } finally {
+    loading.value = false
+  }
+}
+
+const getDocumentUrl = () => {
+  if (document.value?.file_path) {
+    return `${api.defaults.baseURL}/documents/${document.value.id}/view`
+  }
+  return ''
+}
+
+const formatDate = (dateString) => {
+  return new Date(dateString).toLocaleDateString()
+}
+
+const goBack = () => {
+  router.go(-1)
+}
+</script>
+
 <template>
   <div class="document-view">
     <!-- Minimal Navigation Header -->
@@ -78,81 +153,6 @@
     </main>
   </div>
 </template>
-
-<script setup>
-import { ref, onMounted, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import api from '../utils/api.js'
-import { isAuthenticated } from '../utils/auth.js'
-
-const route = useRoute()
-const router = useRouter()
-
-if (!isAuthenticated()){
-  router.push('/login')
-}
-
-const document = ref(null)
-const documentContent = ref('')
-const loading = ref(true)
-const error = ref('')
-
-const isTextFile = computed(() => {
-  if (!document.value?.file_path) return false
-  const extension = document.value.file_path.split('.').pop().toLowerCase()
-  return ['txt', 'md', 'markdown'].includes(extension)
-})
-
-const isPdfFile = computed(() => {
-  if (!document.value?.file_path) return false
-  const extension = document.value.file_path.split('.').pop().toLowerCase()
-  return extension === 'pdf'
-})
-
-onMounted(async () => {
-  await fetchDocument()
-})
-
-const fetchDocument = async () => {
-  try {
-    loading.value = true
-    const documentId = route.params.id
-    
-    // Fetch document metadata
-    const response = await api.get(`/documents/${documentId}`)
-    document.value = response.data.data || response.data
-    
-    // If it's a text file, fetch content
-    if (isTextFile.value) {
-      try {
-        const contentResponse = await api.get(`/documents/${documentId}/view`)
-        documentContent.value = contentResponse.data
-      } catch (contentError) {
-        console.error('Failed to load document content:', contentError)
-      }
-    }
-  } catch (err) {
-    error.value = err.response?.data?.message || 'Failed to load document'
-  } finally {
-    loading.value = false
-  }
-}
-
-const getDocumentUrl = () => {
-  if (document.value?.file_path) {
-    return `${api.defaults.baseURL}/documents/${document.value.id}/view`
-  }
-  return ''
-}
-
-const formatDate = (dateString) => {
-  return new Date(dateString).toLocaleDateString()
-}
-
-const goBack = () => {
-  router.go(-1)
-}
-</script>
 
 <style scoped>
 .document-view {

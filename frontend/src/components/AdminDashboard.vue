@@ -45,8 +45,19 @@ const fetchDocuments = async () => {
 }
 
 const handleFileSelect = (event) => {
-  uploadForm.value.file = event.target.files[0]
+  const file = event.target.files[0];
+  const maxSizeBytes = 10 * 1024 * 1024
+
+  if (file && file.size > maxSizeBytes) {
+    alert('File size exceeds 10MB. Please select a smaller file.');
+    event.target.value = null
+    uploadForm.value.file = null
+    return;
+  }
+
+  uploadForm.value.file = file;
 }
+
 
 const handleUpload = async () => {
   uploading.value = true

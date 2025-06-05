@@ -45,71 +45,84 @@ const handleLogin = async () => {
 </script>
 
 <template>
-  <div class="auth-page">
-    <div class="background-elements">
-      <div class="bg-circle bg-circle-1"></div>
-      <div class="bg-circle bg-circle-2"></div>
-      <div class="bg-circle bg-circle-3"></div>
-    </div>
-    
-    <div class="container">
-      <div class="auth-card">
-        <div class="auth-header">
-          <router-link to="/" class="back-link">
-            <span class="back-icon">←</span>
-            Back to Home
-          </router-link>
-          <div class="brand-section">
-            <div class="brand-icon">🤖</div>
-            <h2>Welcome Back</h2>
-            <p>Sign in to your Askify account</p>
-          </div>
-        </div>
+  <div class="login-page">
+    <div class="login-container">
+      <!-- Compact Header -->
+      <div class="login-header">
+        <router-link to="/" class="back-link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Back
+        </router-link>
         
-        <form @submit.prevent="handleLogin" class="auth-form">
+        <div class="brand-section">
+          <div class="brand-icon">A</div>
+          <h1 class="login-title">Welcome back</h1>
+          <p class="login-subtitle">Sign in to your Askify account</p>
+        </div>
+      </div>
+
+      <!-- Compact Form -->
+      <div class="login-form-container">
+        <form @submit.prevent="handleLogin" class="login-form">
           <div class="form-group">
-            <label for="email">Email Address</label>
-            <div class="input-wrapper">
-              <span class="input-icon">📧</span>
+            <label for="email" class="form-label">Email</label>
+            <div class="input-container">
+              <svg class="input-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <polyline points="22,6 12,13 2,6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
               <input 
                 id="email"
                 v-model="form.email" 
                 type="email" 
-                class="form-control" 
-                required 
+                class="form-input" 
                 placeholder="Enter your email"
+                required 
               />
             </div>
           </div>
           
           <div class="form-group">
-            <label for="password">Password</label>
-            <div class="input-wrapper">
-              <span class="input-icon">🔒</span>
+            <label for="password" class="form-label">Password</label>
+            <div class="input-container">
+              <svg class="input-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="12" cy="16" r="1" fill="currentColor"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
               <input 
                 id="password"
                 v-model="form.password" 
                 type="password" 
-                class="form-control" 
-                required 
+                class="form-input" 
                 placeholder="Enter your password"
+                required 
               />
             </div>
           </div>
           
-          <div v-if="error" class="alert alert-error">
-            <span class="alert-icon">⚠️</span>
+          <div v-if="error" class="error-alert">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="12" y1="8" x2="12" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="12" y1="16" x2="12.01" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
             {{ error }}
           </div>
           
-          <button type="submit" class="btn btn-full" :disabled="loading">
-            <span v-if="loading" class="loading-spinner"></span>
-            {{ loading ? 'Signing In...' : 'Sign In' }}
+          <button type="submit" class="login-button" :disabled="loading">
+            <div v-if="loading" class="loading-spinner"></div>
+            <span>{{ loading ? 'Signing in...' : 'Sign in' }}</span>
           </button>
         </form>
         
-        <div class="auth-footer">
-          <p>Don't have an account? <router-link to="/signup">Create one</router-link></p>
+        <div class="login-footer">
+          <p class="footer-text">
+            Don't have an account? 
+            <router-link to="/signup" class="footer-link">Create one</router-link>
+          </p>
         </div>
       </div>
     </div>
@@ -117,284 +130,194 @@ const handleLogin = async () => {
 </template>
 
 <style scoped>
-.auth-page {
+* {
+  box-sizing: border-box;
+}
+
+.login-page {
   min-height: 100vh;
+  background: #fafbfc;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 1rem;
-  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 25%, #60a5fa 50%, #93c5fd 75%, #dbeafe 100%);
-  position: relative;
+  padding: 1rem 1rem 2rem 1rem;
+  overflow-y: auto;
+}
+
+.login-container {
+  width: 100%;
+  max-width: 360px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e5e7eb;
   overflow: hidden;
+  margin-top: 2rem;
 }
 
-.background-elements {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.bg-circle {
-  position: absolute;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(20px);
-}
-
-.bg-circle-1 {
-  width: 150px;
-  height: 150px;
-  top: 15%;
-  left: 10%;
-  animation: float 6s ease-in-out infinite;
-}
-
-.bg-circle-2 {
-  width: 120px;
-  height: 120px;
-  top: 65%;
-  right: 15%;
-  animation: float 8s ease-in-out infinite reverse;
-}
-
-.bg-circle-3 {
-  width: 80px;
-  height: 80px;
-  bottom: 25%;
-  left: 20%;
-  animation: float 7s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-15px); }
-}
-
-.container {
-  max-width: 400px;
-  width: 100%;
-  position: relative;
-  z-index: 1;
-}
-
-.auth-card {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  border-radius: 20px;
-  box-shadow: 
-    0 20px 40px rgba(0, 0, 0, 0.15),
-    0 0 0 1px rgba(255, 255, 255, 0.2);
-  padding: 1.75rem 1.5rem;
-  width: 100%;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  transition: all 0.3s ease;
-}
-
-.auth-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 
-    0 25px 50px rgba(0, 0, 0, 0.2),
-    0 0 0 1px rgba(255, 255, 255, 0.3);
-}
-
-.auth-header {
+/* Compact Header */
+.login-header {
+  padding: 1.25rem 1.5rem 1rem 1.5rem;
   text-align: center;
-  margin-bottom: 1.25rem;
+  border-bottom: 1px solid #f3f4f6;
 }
 
 .back-link {
   display: inline-flex;
   align-items: center;
   gap: 0.375rem;
-  color: #3b82f6;
+  color: #6b7280;
   text-decoration: none;
-  margin-bottom: 1rem;
+  font-size: 13px;
   font-weight: 500;
-  padding: 0.375rem 0.75rem;
-  border-radius: 50px;
-  background: rgba(59, 130, 246, 0.1);
-  transition: all 0.3s ease;
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  transition: color 0.2s ease;
 }
 
 .back-link:hover {
-  background: rgba(59, 130, 246, 0.15);
-  transform: translateX(-2px);
-}
-
-.back-icon {
-  font-size: 1.1rem;
-  transition: transform 0.3s ease;
-}
-
-.back-link:hover .back-icon {
-  transform: translateX(-2px);
+  color: #3b82f6;
 }
 
 .brand-section {
-  margin-bottom: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .brand-icon {
-  font-size: 2.25rem;
-  margin-bottom: 0.5rem;
-  display: inline-block;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-}
-
-.auth-header h2 {
-  color: #1e3a8a;
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 18px;
   margin-bottom: 0.25rem;
-  font-size: 1.625rem;
-  font-weight: 800;
-  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
-.auth-header p {
-  color: #64748b;
-  font-size: 0.9rem;
-  font-weight: 500;
+.login-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
   margin: 0;
+  line-height: 1.2;
 }
 
-.auth-form {
+.login-subtitle {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.3;
+}
+
+/* Compact Form */
+.login-form-container {
+  padding: 1.5rem;
+}
+
+.login-form {
   margin-bottom: 1rem;
 }
 
 .form-group {
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
 }
 
-.form-group label {
+.form-label {
   display: block;
   margin-bottom: 0.375rem;
-  color: #1e3a8a;
-  font-weight: 600;
-  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  font-size: 13px;
 }
 
-.input-wrapper {
+.input-container {
   position: relative;
-  display: flex;
-  align-items: center;
 }
 
 .input-icon {
   position: absolute;
-  left: 0.75rem;
-  z-index: 2;
-  font-size: 1rem;
-  opacity: 0.7;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  z-index: 1;
 }
 
-.form-control {
+.form-input {
   width: 100%;
-  padding: 0.75rem 0.75rem 0.75rem 2.5rem;
-  border: 2px solid rgba(59, 130, 246, 0.2);
-  border-radius: 10px;
-  font-size: 0.9rem;
-  background: rgba(255, 255, 255, 0.9);
-  transition: all 0.3s ease;
-  color: #1e3a8a;
+  padding: 10px 10px 10px 34px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 15px;
+  background: white;
+  transition: all 0.2s ease;
+  color: #111827;
+  height: 40px;
 }
 
-.form-control:focus {
+.form-input:focus {
   outline: none;
   border-color: #3b82f6;
-  background: white;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  transform: translateY(-1px);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
 }
 
-.form-control::placeholder {
-  color: #94a3b8;
+.form-input::placeholder {
+  color: #9ca3af;
+  font-size: 14px;
 }
 
-.alert {
-  padding: 0.75rem;
-  border-radius: 10px;
-  margin-bottom: 1rem;
+.error-alert {
+  background: #fef2f2;
+  color: #dc2626;
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  margin-bottom: 1.25rem;
+  border: 1px solid #fecaca;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-weight: 500;
-  font-size: 0.875rem;
+  gap: 6px;
+  line-height: 1.3;
 }
 
-.alert-error {
-  background: rgba(239, 68, 68, 0.1);
-  color: #dc2626;
-  border: 1px solid rgba(239, 68, 68, 0.2);
-}
-
-.alert-icon {
-  font-size: 1rem;
-}
-
-.btn-full {
+.login-button {
   width: 100%;
-  margin-top: 0.5rem;
-  padding: 0.875rem 1.5rem;
-  background: linear-gradient(135deg, #3b82f6 0%, #1e3a8a 100%);
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
   color: white;
   border: none;
-  border-radius: 10px;
-  font-size: 1rem;
-  font-weight: 700;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 15px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 6px;
+  height: 42px;
 }
 
-.btn-full::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.5s;
+.login-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  transform: translateY(-1px);
 }
 
-.btn-full:hover::before {
-  left: 100%;
-}
-
-.btn-full:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4);
-  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
-}
-
-.btn-full:disabled {
-  opacity: 0.7;
+.login-button:disabled {
+  opacity: 0.6;
   cursor: not-allowed;
   transform: none;
 }
 
 .loading-spinner {
-  width: 18px;
-  height: 18px;
+  width: 14px;
+  height: 14px;
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-top: 2px solid white;
   border-radius: 50%;
@@ -402,111 +325,109 @@ const handleLogin = async () => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  to { transform: rotate(360deg); }
 }
 
-.auth-footer {
+/* Compact Footer */
+.login-footer {
   text-align: center;
-  margin-top: 1rem;
   padding-top: 1rem;
-  border-top: 1px solid rgba(59, 130, 246, 0.2);
+  border-top: 1px solid #f3f4f6;
 }
 
-.auth-footer p {
-  color: #64748b;
+.footer-text {
+  color: #6b7280;
+  font-size: 13px;
   margin: 0;
-  font-size: 0.9rem;
+  line-height: 1.4;
 }
 
-.auth-footer a {
+.footer-link {
   color: #3b82f6;
   text-decoration: none;
-  font-weight: 600;
-  transition: color 0.3s ease;
+  font-weight: 500;
+  transition: color 0.2s ease;
 }
 
-.auth-footer a:hover {
-  color: #1e3a8a;
+.footer-link:hover {
+  color: #2563eb;
   text-decoration: underline;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-  .auth-card {
-    padding: 1.5rem 1.25rem;
-    margin: 0.5rem;
+/* Mobile Optimized */
+@media (max-width: 480px) {
+  .login-page {
+    padding: 0.75rem 0.75rem 1.5rem 0.75rem;
   }
   
-  .auth-header h2 {
-    font-size: 1.5rem;
+  .login-container {
+    max-width: 320px;
+    margin-top: 1rem;
+  }
+  
+  .login-header {
+    padding: 1rem 1.25rem 0.75rem 1.25rem;
+  }
+  
+  .login-form-container {
+    padding: 1.25rem;
+  }
+  
+  .login-title {
+    font-size: 18px;
+  }
+  
+  .login-subtitle {
+    font-size: 13px;
   }
   
   .brand-icon {
-    font-size: 2rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .auth-page {
-    padding: 0.5rem;
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
   }
   
-  .container {
-    max-width: 350px;
-  }
-  
-  .auth-card {
-    padding: 1.25rem 1rem;
-  }
-  
-  .auth-header h2 {
-    font-size: 1.4rem;
-  }
-  
-  .form-control {
-    padding: 0.625rem 0.625rem 0.625rem 2.25rem;
-    font-size: 0.875rem;
-  }
-  
-  .input-icon {
-    left: 0.625rem;
-    font-size: 0.9rem;
-  }
-  
-  .btn-full {
-    padding: 0.75rem 1.25rem;
-    font-size: 0.9rem;
-  }
-  
-  .back-link {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.825rem;
-  }
-  
-  .bg-circle-1 {
-    width: 100px;
-    height: 100px;
-  }
-  
-  .bg-circle-2 {
-    width: 80px;
-    height: 80px;
-  }
-  
-  .bg-circle-3 {
-    width: 60px;
-    height: 60px;
+  .form-input {
+    font-size: 16px; /* Prevents zoom on iOS */
   }
 }
 
 @media (max-width: 360px) {
-  .container {
-    max-width: 300px;
+  .login-container {
+    max-width: 280px;
   }
   
-  .auth-card {
-    padding: 1rem 0.75rem;
+  .login-header,
+  .login-form-container {
+    padding: 1rem;
+  }
+  
+  .form-group {
+    margin-bottom: 1rem;
+  }
+}
+
+/* Landscape phones */
+@media (max-height: 600px) and (orientation: landscape) {
+  .login-page {
+    align-items: flex-start;
+    padding: 0.5rem;
+  }
+  
+  .login-container {
+    margin-top: 0.5rem;
+  }
+  
+  .login-header {
+    padding: 0.75rem 1.25rem 0.5rem 1.25rem;
+  }
+  
+  .brand-section {
+    gap: 0.25rem;
+  }
+  
+  .back-link {
+    margin-bottom: 0.5rem;
   }
 }
 </style>
