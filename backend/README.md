@@ -1,61 +1,142 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Askify
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+>   Askify is an AI-powered learning assistant that helps students ask questions about their lesson documents. Admins can upload and manage documents, while students can query them intelligently using natural language. Askify connects with Gemini to analyze document content and provide smart, instant answers all from a simple Laravel backend.
 
-## About Laravel
+### Installation
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Laravel 12.0.9 powers the backend with a RESTful API structure.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+1. Clone the repo
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+```bash
+git clone https://github.com/Musoye/Askify.git
+cd Askify
+```
 
-## Learning Laravel
+2. Install backend dependencies
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+```bash
+cd backend
+composer install
+cp .env.example .env
+php artisan key:generate
+```
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+3. Running the App
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Run backend server:
 
-## Laravel Sponsors
+```bash
+# Start backend server
+php artisan serve
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### API
 
-### Premium Partners
+#### Authentication
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+We use **Bearer Token** authentication via Laravel Sanctum to keep things secure and simple.
 
-## Contributing
+* `POST /api/register` — Register a new user
+* `POST /api/login` — Login user
+* `GET /api/logout` — Logout authenticated user *(requires `auth:sanctum`)*
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+When registering users, include:
 
-## Code of Conduct
+* `name` (string)
+* `email` (string)
+* `password` (string)
+* `role` (string)
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+#### Documents
 
-## Security Vulnerabilities
+* `POST /api/documents` — Create a new document *(auth + admin)*
+* `GET /api/documents` — List all documents *(auth)*
+* `GET /api/documents/{id}` — Show single document *(auth)*
+* `PUT /api/documents/{id}` — Update document *(auth + admin)*
+* `DELETE /api/documents/{id}` — Delete document *(auth + admin)*
+* `GET /api/documents/{id}/view` — Public view of document
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+To create a document, send:
 
-## License
+* `title` (string)
+* `description` (string)
+* `file` (file)
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Other values like `filepath`, `gemini_id`, and `expires_at` will be automatically handled by the backend.
+
+#### Questions
+
+* `POST /api/questions` — Create a question *(auth)*
+* `GET /api/questions` — List all questions *(auth + admin)*
+* `GET /api/questions/{id}` — Show a question *(auth)*
+* `PUT /api/questions/{id}` — Update a question *(auth)*
+* `DELETE /api/questions/{id}` — Delete a question *(auth + admin)*
+* `GET /api/questions/{document_id}/questions` — Get questions by document *(auth + admin)*
+* `GET /api/questions/{document_id}/users` — Get user-submitted questions for document *(auth)*
+
+To submit a question, send:
+
+* `user_id` (This will be get from user making the request)
+* `document_id` (int)
+* `question` (string)
+
+Answers are generated automatically by the AI using your question and the document.
+
+All routes are defined in `routes/api.php` and protected appropriately using middleware.
+
+### Environment Variables
+
+Create a `.env` file in the Laravel root folder:
+
+```env
+APP_NAME=YourApp
+APP_ENV=local
+APP_KEY=base64:generatedkey
+APP_URL=http://localhost:8000
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=your_db
+DB_USERNAME=root
+DB_PASSWORD=
+GEMINI_API_KEY=your_gemini_api_key_here
+```
+
+Keep `.env` out of version control.
+
+---
+
+## Database
+
+Use Laravel migrations to set up tables. Configure connection in `.env`. Example:
+
+```bash
+php artisan migrate
+```
+
+Models and migrations are located in `/app/Models` and `/database/migrations`.
+
+---
+
+## AI Integration
+
+We integrate the Gemini API to power AI-based features in this app. Here’s how it works:
+
+Initially, we explored two different methods as contained in Gemini Documentation:
+
+1. **File Upload with URI:**
+
+   * We uploaded document files to Gemini
+   * Then used the URI for making AI queries
+   * Unfortunately, this approach gave inconsistent results, so we moved on
+
+2. **Base64 Document + Query (Current & Preferred):**
+
+   * We convert the document to base64 and send it along with the user’s question to Gemini
+   * This method has proven much more reliable
+   * It requires a `GEMINI_API_KEY`, which must be added to your backend `.env`
+
+All Gemini logic lives in a dedicated service class on the backend to keep things clean and modular.
+
+---

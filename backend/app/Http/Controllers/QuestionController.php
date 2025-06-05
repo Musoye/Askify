@@ -8,11 +8,9 @@ use Illuminate\Http\Request;
 use App\Http\Resources\QuestionResource;
 use Illuminate\Support\Facades\Validator;
 use App\Services\GeminiService;
+
 class QuestionController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         $questions = Question::orderBy('created_at', 'desc')->get();
@@ -49,17 +47,13 @@ class QuestionController extends Controller
             'question' => $request->question,
         ]);
 
-        // Load the document model
         $document = Document::findOrFail($request->document_id);
 
         // Initialize GeminiService
         $gemini = new GeminiService();
 
         try {
-            // Ask Gemini the question with the document
             $answer = $gemini->ask_upload($document, $request->question);
-
-            // Save the answer in the question model
             $question->answer = $answer;
             $question->save();
         } catch (\Exception $e) {
@@ -75,9 +69,6 @@ class QuestionController extends Controller
         ], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Question $question)
     {
         return response()->json([
@@ -126,11 +117,6 @@ class QuestionController extends Controller
         }
     }
 
-
-
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Question $question)
     {
         $validator = Validator::make($request->all(), [
@@ -149,7 +135,6 @@ class QuestionController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        // Only update if fields are present
         $updates = array_filter($validator->validated());
 
         $question->update($updates);
@@ -160,9 +145,6 @@ class QuestionController extends Controller
         ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Question $question)
     {
         $question->delete();
