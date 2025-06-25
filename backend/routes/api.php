@@ -21,7 +21,7 @@ Route::get('/documents/{document}', [DocumentController::class, 'show'])->middle
 Route::put('/documents/{document}', [DocumentController::class, 'update'])->middleware(['auth:sanctum', AdminMiddleware::class]);
 Route::delete('/documents/{document}', [DocumentController::class, 'destroy'])->middleware(['auth:sanctum', AdminMiddleware::class]);
 Route::get('/documents/{document}/view', [DocumentController::class, 'view']);
-Route::get('/documents/{document_id}/recommend', [DocumentController::class, 'recommendDocument']); //->middleware('auth:sanctum');
+Route::get('/documents/{document_id}/recommend', [DocumentController::class, 'recommendDocument'])->middleware('auth:sanctum');
 
 // QUESTION DEFINITION
 

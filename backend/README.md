@@ -56,6 +56,7 @@ When registering users, include:
 * `PUT /api/documents/{id}` — Update document *(auth + admin)*
 * `DELETE /api/documents/{id}` — Delete document *(auth + admin)*
 * `GET /api/documents/{id}/view` — Public view of document
+* `GET /api/documents/{id}/recommend` — Recommend based on the documents id passed *(auth)*
 
 To create a document, send:
 
