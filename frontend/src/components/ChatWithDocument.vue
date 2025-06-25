@@ -17,10 +17,13 @@ const newMessage = ref('')
 const isLoading = ref(false)
 const isLoadingHistory = ref(false)
 const messagesContainer = ref(null)
+const recommendedDocuments = ref([])
+const isLoadingRecommendations = ref(false)
 
 onMounted(async () => {
   await fetchDocument()
   await loadPreviousChats()
+  await loadRecommendedDocuments()
 })
 
 const fetchDocument = async () => {
@@ -30,6 +33,23 @@ const fetchDocument = async () => {
     document.value = response.data.data || response.data
   } catch (error) {
     console.error('Failed to load document:', error)
+  }
+}
+
+const loadRecommendedDocuments = async () => {
+  try {
+    isLoadingRecommendations.value = true
+    const documentId = route.params.id
+    const response = await api.get(`/documents/${documentId}/recommend`)
+    
+    if (response.data.data && response.data.data.length > 0) {
+      // Limit to maximum of 3 recommendations
+      recommendedDocuments.value = response.data.data.slice(0, 3)
+    }
+  } catch (error) {
+    console.error('Failed to load recommended documents:', error)
+  } finally {
+    isLoadingRecommendations.value = false
   }
 }
 
@@ -137,6 +157,20 @@ const formatTime = (timestamp) => {
 const goBack = () => {
   router.go(-1)
 }
+
+const viewRecommendedDocument = (docId) => {
+  router.push(`/document/${docId}`)
+}
+
+const truncateText = (text, maxLength = 100) => {
+  if (!text) return ''
+  return text.length > maxLength ? text.substring(0, maxLength) + '...' : text
+}
+
+const formatTags = (tags) => {
+  if (!tags) return []
+  return tags.split(',').map(tag => tag.trim()).slice(0, 3)
+}
 </script>
 
 <template>
@@ -161,6 +195,49 @@ const goBack = () => {
     <!-- Main Chat Area -->
     <main class="main">
       <div class="container">
+        <!-- Recommended Documents Section -->
+        <div v-if="recommendedDocuments.length > 0 || isLoadingRecommendations" class="recommendations-section">
+          <div class="recommendations-card">
+            <h3 class="recommendations-title">
+              <span class="recommendations-icon">💡</span>
+              Recommended Documents
+            </h3>
+            
+            <!-- Loading Recommendations -->
+            <div v-if="isLoadingRecommendations" class="recommendations-loading">
+              <div class="spinner-small"></div>
+              <span>Loading recommendations...</span>
+            </div>
+            
+            <!-- Recommended Documents List -->
+            <div v-else class="recommendations-list">
+              <div 
+                v-for="doc in recommendedDocuments" 
+                :key="doc.id" 
+                class="recommendation-item"
+                @click="viewRecommendedDocument(doc.id)"
+              >
+                <div class="recommendation-content">
+                  <h4 class="recommendation-title">{{ doc.title }}</h4>
+                  <p v-if="doc.description" class="recommendation-description">
+                    {{ truncateText(doc.description) }}
+                  </p>
+                  <div v-if="doc.tags" class="recommendation-tags">
+                    <span 
+                      v-for="tag in formatTags(doc.tags)" 
+                      :key="tag" 
+                      class="tag"
+                    >
+                      {{ tag }}
+                    </span>
+                  </div>
+                </div>
+                <div class="recommendation-arrow">→</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="chat-container">
           <!-- Chat Messages -->
           <div class="messages" ref="messagesContainer">
@@ -214,7 +291,7 @@ const goBack = () => {
                   :disabled="!newMessage.trim() || isLoading"
                 >
                   <span v-if="isLoading">⏳</span>
-                  <span v-else>→</span>
+                  <span v-else">→</span>
                 </button>
               </div>
             </form>
@@ -224,7 +301,6 @@ const goBack = () => {
     </main>
   </div>
 </template>
-
 
 <style scoped>
 .chat-view {
@@ -308,16 +384,137 @@ const goBack = () => {
   max-width: 800px;
   margin: 0 auto;
   padding: 0 1.5rem;
-  height: calc(100vh - 120px);
+  min-height: calc(100vh - 120px);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Recommendations Section */
+.recommendations-section {
+  flex-shrink: 0;
+}
+
+.recommendations-card {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #007aff;
+}
+
+.recommendations-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 1rem 0;
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+}
+
+.recommendations-icon {
+  font-size: 18px;
+}
+
+.recommendations-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #666;
+  font-size: 14px;
+}
+
+.spinner-small {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #f0f0f0;
+  border-top: 2px solid #007aff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.recommendations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.recommendation-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 12px 16px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.recommendation-item:hover {
+  background: #f0f8ff;
+  border-color: #007aff;
+  transform: translateY(-1px);
+}
+
+.recommendation-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.recommendation-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  margin: 0 0 4px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.recommendation-description {
+  font-size: 12px;
+  color: #666;
+  margin: 0 0 8px 0;
+  line-height: 1.3;
+}
+
+.recommendation-tags {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.tag {
+  background: #e8f4fd;
+  color: #007aff;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+.recommendation-arrow {
+  color: #007aff;
+  font-size: 14px;
+  opacity: 0.7;
+  transition: all 0.2s ease;
+}
+
+.recommendation-item:hover .recommendation-arrow {
+  opacity: 1;
+  transform: translateX(2px);
 }
 
 .chat-container {
   background: white;
   border-radius: 8px;
-  height: 100%;
+  flex: 1;
   display: flex;
   flex-direction: column;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  min-height: 500px;
 }
 
 /* Messages */
@@ -518,7 +715,27 @@ const goBack = () => {
   
   .container {
     padding: 0 1rem;
-    height: calc(100vh - 100px);
+    min-height: calc(100vh - 100px);
+  }
+  
+  .recommendations-card {
+    padding: 1rem;
+  }
+  
+  .recommendations-title {
+    font-size: 14px;
+  }
+  
+  .recommendation-item {
+    padding: 10px 12px;
+  }
+  
+  .recommendation-title {
+    font-size: 13px;
+  }
+  
+  .recommendation-description {
+    font-size: 11px;
   }
   
   .messages {
