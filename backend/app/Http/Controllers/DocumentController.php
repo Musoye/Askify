@@ -8,12 +8,28 @@ use App\Http\Resources\DocumentResource;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 use App\Services\GeminiService;
+use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Log;
 
 class DocumentController extends Controller
 {
     public function index()
     {
         $documents = Document::orderBy('created_at', 'desc')->get();
+
+        // This is used for migration and tagging documents
+        // $gemini = new GeminiService();
+
+        // foreach ($documents as $doc) {
+        //     try {
+        //         $tags = $gemini->generateAndStoreTags($doc);   // ← stores to DB
+        //         Log::info("Tagged #{$doc->id}: {$tags}");
+        //     } catch (\Throwable $e) {
+        //         Log::error("Tagging failed for #{$doc->id}", [
+        //             'error' => $e->getMessage(),
+        //         ]);
+        //     }
+        // }
 
         if ($documents->count() > 0) {
             return response()->json([
@@ -52,6 +68,17 @@ class DocumentController extends Controller
             'file_path' => $path,
             'description' => $request->description,
         ]);
+
+        $gemini = new GeminiService();
+
+        try {
+            $tags = $gemini->generateAndStoreTags($doc);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to get answer from Gemini',
+                'error' => $e->getMessage()
+            ], 500);
+        }
 
         // Upload to Gemini
         // try {
@@ -128,5 +155,49 @@ class DocumentController extends Controller
         return response()->json([
             'message' => 'Document has been Deleted Successfully'
         ]);
+    }
+
+    public function recommendDocument($document_id)
+    {
+        $document = Document::find($document_id);
+
+        if (!$document) {
+            return Response::json(['message' => 'Document not found', 'status' => 404], 404);
+        }
+
+        $tags = collect(explode(',', $document->tags))
+            ->map(fn($t) => trim(strtolower($t)))
+            ->filter();
+
+        if ($tags->isEmpty()) {
+            return Response::json(['message' => 'No tags on this document', 'status' => 200], 200);
+        }
+
+        $candidates = Document::where('id', '!=', $document->id)
+            ->whereNotNull('tags')
+            ->get()
+            ->map(function ($doc) use ($tags) {
+                $docTags = collect(explode(',', $doc->tags))
+                    ->map(fn($t) => trim(strtolower($t)));
+
+                $doc->match_score = $tags->intersect($docTags)->count();
+
+                return $doc;
+            })
+            ->filter(fn($doc) => $doc->match_score > 0)        // keep only those with at least one overlap
+            ->sortByDesc('match_score')                         // highest overlap first
+            ->take(3)                                           // top 3
+            ->values();                                         // reset keys for clean JSON
+
+
+        if ($candidates->isEmpty()) {
+            return Response::json(['message' => 'No recommended documents', 'status' => 200], 200);
+        }
+
+        return Response::json([
+            'message' => 'Recommended documents',
+            'status' => 200,
+            'data' => DocumentResource::collection($candidates)
+        ], 200);
     }
 }

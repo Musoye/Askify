@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use App\Models\Document;
 use Carbon\Carbon;
 
@@ -194,6 +196,79 @@ class GeminiService
         }
 
         return $response->json('candidates.0.content.parts.0.text', 'No response.');
+    }
+
+    /**
+     * Generate descriptive tags for the given document via Gemini 2 Flash
+     * and persist them to the `tags` column.
+     *
+     * @param  \App\Models\Document  $document
+     * @param  int  $maxTags  Maximum number of tags to keep (default 7)
+     * @return string  The stored, comma-separated tag list
+     *
+     * @throws \Exception if the file is missing or Gemini responds with an error.
+     */
+    public function generateAndStoreTags(Document $document, int $maxTags = 7): string
+    {
+        $filePath = storage_path("app/public/{$document->file_path}");
+        if (!file_exists($filePath)) {
+            throw new \Exception("PDF not found for document ID {$document->id}");
+        }
+
+        $base64 = base64_encode(file_get_contents($filePath));
+
+        $prompt = Str::of("
+        Read the attached PDF and return ONLY a concise, comma-separated
+        list of {$maxTags} or fewer topical tags (1-3 words each, no extra punctuation).
+        Example: finance, risk analysis, investment strategy
+    ")->squish();
+
+        $payload = [
+            'contents' => [
+                [
+                    'parts' => [
+                        [
+                            'inline_data' => [
+                                'mime_type' => 'application/pdf',
+                                'data' => $base64,
+                            ],
+                        ],
+                        ['text' => $prompt],
+                    ],
+                ]
+            ],
+        ];
+
+        $response = Http::withHeaders([
+            'Content-Type' => 'application/json',
+        ])->post(
+                "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" . $this->getApiKey(),
+                $payload
+            );
+
+        if ($response->failed()) {
+            throw new \Exception('Gemini tag generation failed: ' . $response->body());
+        }
+
+        $raw = $response->json('candidates.0.content.parts.0.text', '');
+        if ($raw === '') {
+            throw new \Exception('Gemini returned an empty tag list.');
+        }
+
+        /* ---------- 4. Normalise & persist ---------- */
+        $tags = collect(explode(',', $raw))
+            ->map(fn($t) => Str::of($t)->trim()->lower()->limit(40))
+            ->filter()
+            ->unique()
+            ->take($maxTags)
+            ->implode(',');
+
+        DB::transaction(function () use ($document, $tags) {
+            $document->tags = $tags;
+            $document->save();
+        });
+
+        return $tags;
     }
 
 

@@ -5,6 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+
 class documentResource extends JsonResource
 {
     /**
@@ -25,6 +26,7 @@ class documentResource extends JsonResource
             'expires_at' => $this->expires_at,
             'description' => $this->description,
             'uri' => $this->uri,
+            'tags' => $this->tags,
             'created_at' => $this->created_at,
         ];
     }
