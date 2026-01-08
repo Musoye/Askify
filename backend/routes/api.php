@@ -44,6 +44,10 @@ Route::get('/questions/{document_id}/users', [QuestionController::class, 'getByU
 //     })->withoutMiddleware([AdminMiddleware::class . ':admin']);
 // });
 
+Route::get('/status', function () {
+    return response()->json(['status' => 'API is running'], 200);
+});
+
 
 
 Route::get('/user', function (Request $request) {
